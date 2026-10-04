@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: 79, 70, 229; /* Indigo 600 */
+    --brand-secondary: 71, 85, 105; /* Slate 600 */
+  }
+
+  body {
+    @apply antialiased text-slate-900 bg-[#F8FAFC]; /* slate-50 */
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white border border-slate-200 shadow-sm rounded-xl;
+  }
+  
+  .input-premium {
+    @apply w-full px-4 py-2.5 bg-white border border-slate-300 shadow-sm rounded-lg transition-all duration-200 
+           focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none text-sm;
+  }
+
+  .btn-premium {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg
+           hover:bg-slate-800 active:bg-slate-950 transition-all duration-200 shadow-sm;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
