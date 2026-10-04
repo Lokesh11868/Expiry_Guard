@@ -13,3 +13,4 @@ bcrypt==3.2.2
 sib-api-v3-sdk
 openai>=1.0.0
 sentry-sdk>=2.0.0
+Pillow>=10.0.0
