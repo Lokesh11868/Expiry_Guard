@@ -37,51 +37,67 @@ ExpiryGuard uses an open-weight Gemma model through hosted inference for its cor
 
 *Note: The Gemma inference is hosted via an external provider (OpenRouter) and does not run locally on Render, keeping the backend extremely lightweight.*
 
-##  Architecture & Data Flow
+##  System Architecture
+
+ExpiryGuard is built on a modern, decoupled architecture designed for scalability, security, and extremely rapid data processing.
 
 ```mermaid
 graph TD
     User((User)) -->|Interacts| UI
-    subgraph Frontend ["React + Vite + Tailwind"]
+    subgraph Frontend ["React + Vite Frontend"]
         UI[Dashboard & Smart Add]
     end
 
-    UI -->|Requests| FastAPI
+    UI -->|JSON Requests| FastAPI
     
-    subgraph Backend ["FastAPI"]
+    subgraph Backend ["Python FastAPI Backend"]
         FastAPI[API Router]
-        Auth[JWT Auth]
-        SmartInput[Smart Input Hub]
+        Auth[JWT Auth & Security]
+        SmartInput[Input Processing Hub]
         
-        subgraph OpenWeightAIService ["Open-Weight AI Service"]
-            Extraction[Structured Extraction]
-            Risk[Risk & Action Intelligence]
+        subgraph AI_Engine ["Gemma AI Engine"]
+            Extraction[Natural Language Extraction]
+            Search[Semantic Smart Search]
         end
         
-        Notifier[Notification Service]
+        Notifier[Background Scheduler]
     end
 
     FastAPI --> Auth
     FastAPI --> SmartInput
     SmartInput --> Extraction
-    Extraction --> Risk
-    Risk --> FastAPI
+    Extraction --> FastAPI
+    FastAPI --> Search
     FastAPI --> Notifier
     
     subgraph Database ["MongoDB Atlas"]
-        DB[(Collections)]
+        DB[(Cloud Collections)]
     end
     
-    FastAPI <--> DB
+    FastAPI <-->|Motor AsyncIO| DB
 ```
 
-##  Tech Stack
+###  The Core: Google Gemma
+At the heart of the system is **Gemma**, an open-weight LLM. Instead of relying on brittle Regex or manual form parsing, ExpiryGuard funnels unstructured data (voice transcripts, OCR text from receipts, and natural language queries) directly into Gemma. 
+- **Extraction:** Gemma is prompted with a strict system schema to identify product names, expiry dates, serial numbers, and warranty durations, returning a perfectly formatted JSON object to the backend.
+- **Smart Search:** When a user types *"show me medical supplies expiring next month"*, Gemma interprets the intent and translates it into structured query parameters that the backend uses to filter the database, ensuring the LLM never has direct database access.
 
-- **Frontend**: React, Vite, TailwindCSS, Chart.js, Lucide-React
-- **Backend**: Python, FastAPI, Uvicorn, Sentry SDK
-- **Database**: MongoDB (Atlas)
-- **AI/ML**: Google's open-weight **Gemma** model (e.g., `google/gemma-4-26b-a4b-it`) hosted via inference providers (OpenRouter)
-- **External Services**: OCR.space, Brevo (Emails), Open Food Facts (Barcodes)
+###  The Data Layer: MongoDB Atlas
+To handle the highly variable schemas of different items (a passport has different metadata than a gallon of milk or an enterprise software subscription), we use **MongoDB Atlas**. 
+- **Document Model:** MongoDB's flexible BSON document model allows us to store arbitrary metadata for different item categories without requiring complex SQL migrations.
+- **Async Driver:** The backend interfaces with Atlas using `Motor` (an asynchronous Python driver for MongoDB), allowing FastAPI to handle thousands of concurrent requests without blocking the event loop.
+- **Cloud Hosted:** Atlas ensures our database is globally available, secure, and backed up automatically.
+
+###  The API: FastAPI (Python)
+The backend is built with **FastAPI**, chosen for its extreme performance and native support for asynchronous programming.
+- **Pydantic Validation:** All data entering or leaving the API is strictly validated using Pydantic schemas, ensuring the frontend only receives clean data.
+- **Background Tasks:** Email notifications and risk assessments are spun off into non-blocking background tasks, ensuring the user interface remains snappy.
+
+###  The Interface: React + TailwindCSS
+The frontend is a single-page application (SPA) built with **React** and bundled using **Vite**. 
+- **Styling:** We use **TailwindCSS** for utility-first, highly responsive styling, paired with **Lucide-React** for crisp iconography.
+- **State Management:** React Context securely manages JWT authentication state across the application.
+- **Visuals:** **Chart.js** provides the interactive analytics visualizations on the Statistics dashboard.
 
 ##  Environment Variables
 
